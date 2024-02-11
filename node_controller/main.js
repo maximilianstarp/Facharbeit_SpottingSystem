@@ -7,10 +7,11 @@ const createWindow = () => {
     height: 900,
     minWidth: 900,
     minHeight: 500,
+    icon: path.join(__dirname, 'src/assets/spotlight-icon.png'),
     webPreferences: {
         nodeIntegration: true,
         contextIsolation: true,
-        devTools: true, // -> change to false in production
+        devTools: true,
         preload: path.join(__dirname, 'preload.js')
     }
     })
