@@ -1,0 +1,12 @@
+.error-pages.error-container {
+    text-align: center;
+}
+.error-pages.error-container h1 {
+    color: var(--font-color);
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+.error-pages.error-container p {
+    color: var(--font-color);
+    font-size: 1.2rem;
+}

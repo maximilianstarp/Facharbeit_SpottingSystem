@@ -1,0 +1,181 @@
+{% extends 'base_template.html' %}
+
+{% block content %}
+{% set theme = theme %}
+
+<!--
+    vars:
+    show_name_error_msg
+    show_name_placeholder
+
+    cam_addr_error_msg
+    cam_addr_placeholder
+    cam_ftpr_error_msg
+    cam_ftpr_placeholder
+    cam_ftpr_options
+
+    mh_addr_error_msg
+    mh_addr_placeholder
+    mh_ftpr_error_msg
+    mh_ftpr_placeholder
+    mh_ftpr_options
+
+    univers_error_msg
+    univers_placeholder
+
+    xdist_error_msg
+    xdist_placeholder
+
+    ydist_error_msg
+    ydist_placeholder
+
+    zdist_error_msg
+    zdist_placeholder
+
+    panrot_error_msg
+    panrot_placeholder
+
+    tiltrot_error_msg
+    tiltrot_placeholder
+
+    ip_ctrl_error_msg
+    ip_ctrl_placeholder
+
+    ip_cam_error_msg
+    ip_cam_placeholder
+
+    port_cam_error_msg
+    port_cam_placeholder
+
+    ip_node_error_msg
+    ip_node_placeholder
+-->
+
+{% include 'header_template.html' %}
+<div id="show">
+    <div id="show-header">
+        <h1>{{ show_name }}</h1>
+    </div>
+    <div class="show-container">
+        <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_showpages', show_name=show_name) }}">
+            <div class="section">
+                <h2 class="section-title">General Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['show_name'] }}</span>
+                        <span class="label">Change Show Name</span>
+                        <input type="text" name="show-name" id="show-name" class="input" placeholder="{{ shows_data['show_name'] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">DMX Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['cam_addr'] }}</span>
+                        <span class="label">Camera-address</span>
+                        <input type="text" name="cam-addr" id="cam-addr" class="input" placeholder="{{ shows_data['cam_addr'] }}">
+                    </div>
+
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['cam_ftpr'] }}</span>
+                        <span class="label">Camera-footprint</span>
+                        <input type="text" name="cam-ftpr" id="cam-ftpr" class="input" placeholder="{{ shows_data['cam_ftpr'] }}">
+                    </div>
+
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['mh_addr'] }}</span>
+                        <span class="label">Movinghead-address</span>
+                        <input type="text" name="mh-addr" id="mh-addr" class="input" placeholder="{{ shows_data['mh_addr'] }}">
+                    </div>
+                
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['mh_ftpr'] }}</span>
+                        <span class="label">Movinghead-footprint</span>
+                        <input type="text" name="mh-ftpr" id="mh-ftpr" class="input" placeholder="{{ shows_data['mh_ftpr'] }}">
+                    </div>
+                
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['universe'] }}</span>
+                        <span class="label">DMX Universe</span>
+                        <input type="text" name="universe" id="universe" class="input" placeholder="{{ shows_data['universe'] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Room Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['xdist'] }}</span>
+                        <span class="label">X-Distance</span>
+                        <input type="text" name="x-dist" id="x-dist" class="input" placeholder="{{ shows_data['xdist'] }}">
+                    </div>
+            
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['ydist'] }}</span>
+                        <span class="label">Y-Distance</span>
+                        <input type="text" name="y-dist" id="y-dist" class="input" placeholder="{{ shows_data['ydist'] }}">
+                    </div>
+            
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['zdist'] }}</span>
+                        <span class="label">Z-Distance</span>
+                        <input type="text" name="z-dist" id="z-dist" class="input" placeholder="{{ shows_data['zdist'] }}">
+                    </div>
+
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['panrot'] }}</span>
+                        <span class="label">Pan-Rotation</span>
+                        <input type="text" name="pan-rot" id="pan-rot" class="input" placeholder="{{ shows_data['panrot'] }}">
+                    </div>
+
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['tiltrot'] }}</span>
+                        <span class="label">Tilt-Rotation</span>
+                        <input type="text" name="tilt-rot" id="tilt-rot" class="input" placeholder="{{ shows_data['tiltrot'] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Controller Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['ip_ctrl'] }}</span>
+                        <span class="label">IP-Controller</span>
+                        <input type="text" name="ip-ctrl" id="ip-ctrl" class="input" placeholder="{{ shows_data['ip_ctrl'] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Camera Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['ip_cam'] }}</span>
+                        <span class="label">IP-Camera</span>
+                        <input type="text" name="ip-cam" id="ip-cam" class="input" placeholder="{{ shows_data['ip_cam'] }}">
+                    </div>
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['port_cam'] }}</span>
+                        <span class="label">Port-Camera</span>
+                        <input type="text" name="port-cam" id="port-cam" class="input" placeholder="{{ shows_data['port_cam'] }}">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Node Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{ error_msgs['ip_node'] }}</span>
+                        <span class="label">IP-Node</span>
+                        <input type="text" name="ip-node" id="ip-node" class="input" placeholder="{{ shows_data['ip_node'] }}">
+                    </div>
+                </div>
+            </div>
+            <div id="show-footer">
+                <input type="submit" name="btn-name" value="Save" class="save">
+                <input type="submit" name="btn-name" value="Cancel" class="cancel">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

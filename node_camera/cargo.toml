@@ -1,0 +1,9 @@
+[package]
+name = "node_camera"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+serialport = "4.0.1"
+byteorder = "1.5.0"
+actix-web = "4.0.1"

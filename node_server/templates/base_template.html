@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% if theme == "dark" %}
+        <link rel="stylesheet" href="{{ url_for('static',filename='/css/dark_mode_vars.css') }}">
+    {% else %}
+        <link rel="stylesheet" href="{{ url_for('static',filename='/css/light_mode_vars.css') }}">
+    {% endif %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='/css/templates_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='/css/error_pages_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='/fontawesome/css/all.css') }}">
+    
+    <title>SpotSystem</title>
+</head>
+<body>
+    {% block content %} {% endblock %}
+</body>
+</html>

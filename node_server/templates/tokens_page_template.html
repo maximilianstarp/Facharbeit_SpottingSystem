@@ -1,0 +1,40 @@
+{% extends 'base_template.html' %}
+
+{% block content %}
+{% set theme = theme %}
+
+<!--
+    vars:
+    controller_token
+-->
+
+{% include 'header_template.html' %}
+<div id="tokens">
+    <div id="tokens-header">
+        <h1>Tokens</h1>
+    </div>
+    <div id="tokens-container">
+        <div class="section">
+            <h2 class="section-title">Controller Token</h2>
+            <div class="content">
+                <div class="package">
+                    <span class="label">Token:</span>
+                    <input type="text" name="cam-addr" id="cam-addr" class="input" value="{{ controller_token }}" readonly>
+                    <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_tokenspage') }}">
+                        <input type="submit" name="btn-name" value="New Controller-Token" class="generate">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="tokens-footer">
+    <input type="submit" name="btn-name" value="Cancel" class="cancel" onclick="goBack()">
+</div>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+{% endblock %}

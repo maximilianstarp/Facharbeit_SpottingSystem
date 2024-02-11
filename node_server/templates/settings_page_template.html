@@ -1,0 +1,86 @@
+{% extends 'base_template.html' %}
+
+{% block content %}
+{% set theme = theme %}
+
+<!--
+    vars:
+    current_username_error_msg
+    new_username_error_msg
+    repnew_username_error_msg
+
+    current_psw_error_msg
+    new_psw_error_msg
+    repnew_psw_error_msg
+
+    port_error_msg
+    port_placeholder
+-->
+
+{% include 'header_template.html' %}
+<div id="settings">
+    <div id="settings-header">
+        <h1>Settings</h1>
+    </div>
+    <div id="settings-container">
+        <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_settingspage') }}">
+            <div class="section">
+                <h2 class="section-title">Account Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['current_username']}}</span>
+                        <span class="label">Current Username</span>
+                        <input type="text" name="current-username" id="current-username" class="input" placeholder="">
+                    </div>
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['new_username']}}</span>
+                        <span class="label">New Username</span>
+                        <input type="text" name="new-username" id="new-username" class="input" placeholder="New username ...">
+                    </div>
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['repnew_username']}}</span>
+                        <span class="label">New Username</span>
+                        <input type="text" name="repnew-username" id="repnew-username" class="input" placeholder="Repeat new username ...">
+                    </div>
+
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['current_psw']}}</span>
+                        <span class="label">Current Password</span>
+                        <input type="password" name="current-psw" id="current-psw" class="input" placeholder="">
+                    </div>
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['new_psw']}}</span>
+                        <span class="label">New Password</span>
+                        <input type="password" name="new-psw" id="new-psw" class="input" placeholder="New password ...">
+                    </div>
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['repnew_psw']}}</span>
+                        <span class="label">New Password</span>
+                        <input type="password" name="repnew-psw" id="repnew-psw" class="input" placeholder="Repeat new password ...">
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Port Settings</h2>
+                <div class="content">
+                    <div class="package">
+                        <span class="error-msg">{{error_msgs['port']}}</span>
+                        <span class="label">New Port</span>
+                        <input type="text" name="new-port" id="new-port" class="input" placeholder="{{placeholders['port']}}">
+                    </div>
+                </div>
+            </div>
+            <div id="settings-footer">
+                <input type="submit" name="btn-name" value="Save" class="save">
+                <input type="submit" name="btn-name" value="Cancel" class="cancel" onclick="goBack()">
+            </div>
+        </form>
+    </div>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</div>
+
+{% endblock %}

@@ -1,0 +1,3 @@
+node_camera/target/
+node_server/venv/
+node_server/__pycache__/

@@ -1,0 +1,29 @@
+{% extends 'base_template.html' %}
+
+{% block content %}
+{% set theme = theme %}
+
+<div id="login">
+    <div id="main">
+        <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_loginpage') }}">
+            <h1>Welcome to <span>Maximilian Starp's</span></h1>
+            <p>Spot System</p>
+            {% if msg %}
+                <p id="login-error">{{ msg }}</p>
+            {% endif %}
+            <div class="input-box">
+                <input type="text" required="" name="username">
+                <span>Username</span>
+                <i></i>
+            </div>
+            <div class="input-box">
+                <input type="password" required="" name="password">
+                <span>Password</span>
+                <i></i>
+            </div>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+</div>
+
+{% endblock %} 

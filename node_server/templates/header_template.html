@@ -1,0 +1,50 @@
+<header id="header">
+    <div id="navbar">
+
+        <div id="logo">
+            <a href="{{ url_for('web_ui_handler_homepage') }}">Spot System</a>
+        </div>
+
+        <ul id="links">
+            <li><a href="{{ url_for('web_ui_handler_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="{{ url_for('web_ui_handler_settingspage') }}"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="{{ url_for('web_ui_handler_tokenspage') }}"><i class="fa-solid fa-key"></i> Tokens</a></li>
+            <li>
+                <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_homepage') }}">
+                    <button type="submit" name="btn-name" value="theme-form"><i class="fas fa-adjust"></i> Theme</button>
+                </form>
+            </li>
+        </ul>
+
+        <div id="toggle-btn">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+
+        <div id="dropdown-menu">
+            <li><a href="{{ url_for('web_ui_handler_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="{{ url_for('web_ui_handler_settingspage') }}"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="{{ url_for('web_ui_handler_tokenspage') }}"><i class="fa-solid fa-key"></i> Tokens</a></li>
+            <li>
+                <form autocomplete="off" method="post" action="{{ url_for('web_ui_handler_homepage') }}">
+                    <button type="submit" name="btn-name" value="theme-form"><i class="fas fa-adjust"></i> Theme</button>
+                </form>
+            </li>
+        </div>
+
+    </div>
+</header>
+<script>
+    const toggleBtn = document.querySelector('.toggle-btn')
+    const dropdownMenu = document.querySelector('.dropdown-menu')
+    const toggleBtnIcon = document.querySelector('.toggle-btn i')
+
+    toggleBtn.onclick = function () {
+        dropdownMenu.classList.toggle('open')
+        const isOpen = dropdownMenu.classList.contains('open')
+
+        toggleBtnIcon.classList = isOpen
+            ? "fa-solid fa-xmark"
+            : "fa-solid fa-bars"
+    }
+    
+</script>

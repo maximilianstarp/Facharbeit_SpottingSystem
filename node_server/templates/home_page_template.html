@@ -1,0 +1,79 @@
+{% extends 'base_template.html' %}
+
+{% block content %}
+{% set theme = theme %}
+
+<div id="home">
+    {% include 'header_template.html' %}
+
+    <header id="new-show-bar">
+        <form action="{{ url_for('web_ui_handler_homepage') }}" id="new-show-form" method="post" autocomplete="off">
+            <input type="text" id="new-show-input" name="show-name" placeholder="New Show ...">
+            <button type="submit" id="new-show-submit" name="btn-name" value="add-show">Add Show</button>
+        </form>
+    </header>
+
+    <div id="main">
+        <div id="shows-list">
+            <h2>Shows</h2>
+            <div id="shows">
+                {% for show in shows %}
+
+                <div class="show">
+                    <div class="content">
+                        <input 
+                            type="text" 
+                            class="text" 
+                            value="{{ show }}"
+                            readonly>
+                    </div>
+
+                    <div class="actions">
+                        <form action="{{ url_for('web_ui_handler_homepage') }}" method="post">
+                            <input type="hidden" name="btn-index" value="{{ show }}">
+                            <input type="submit" name="btn-name" value="load" class='load'>
+                        </form>
+                        <input type="submit" value="Delete" class='delete' onclick='openDeletePopup("{{show}}")''>
+                    </div>
+
+                </div>
+
+                {% endfor %}
+            </div>
+
+            <div id="delete-show-popup">
+                <button id="close" onclick="closeDeletPopup()">&times;</button>
+                <h2>Delete</h2>
+                <p>Are you sure, that you want to delete this Show? Once deleted it can not be restored!</p>
+                <button type="submit" name="btn-delete" id="delete" onclick="deleteShow()">Yes, delete!</button>
+
+                <form id="delete-form" action="{{ url_for('web_ui_handler_homepage') }}" method="post">
+                    <input type="hidden" name="btn-delete" id="show-name-input">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentShowName;
+
+        function openDeletePopup(showName) {
+            document.getElementById('delete-show-popup').style.display = 'block';
+            currentShowName = showName;
+        }
+
+        function closeDeletPopup() {
+            document.getElementById('delete-show-popup').style.display = 'none';
+            currentShowName = null;
+        }
+
+        function deleteShow() {
+            document.getElementById('delete-show-popup').style.display = 'none';
+            document.getElementById('show-name-input').value = currentShowName;
+            document.getElementById('delete-form').submit();
+            currentShowName = null;
+        }
+    </script>
+</div>
+
+{% endblock %} 
