@@ -108,7 +108,6 @@ app.secret_key = server_helper.hasher.generate_api_token()
 
     
 @app.route("/controller/input", methods=['POST'])
-@SpottingSystemServerHelper.login_required
 def api_handler_controller_input():
     token = request.headers.get('Authorization')
     show_name = request.args.get('show_name')
@@ -123,7 +122,10 @@ def api_handler_controller_input():
     except:
         return jsonify({'error': 'Show not found!'}), 405
     
-    universe, distance, x, y, z, movinghead_pan, movinghead_tilt, camera_pan, camera_tilt = server_helper.dmx_calculator(values=data_input, shows_data=server_helper.get_shows_data().loc[server_helper.get_shows_data().index[show_id]])
+    if request.remote_addr != server_helper.get_shows_data()['ip_ctrl'].loc[server_helper.get_shows_data().index[show_id]]:
+        return jsonify({'error': 'Unauthorized access! Wrong IP'}), 402
+    
+    universe, distance, x, y, z, movinghead_pan, movinghead_tilt, camera_pan, camera_tilt = server_helper.dmx_calculator.calculate_dmx_universe(values=data_input, shows_data=server_helper.get_shows_data().loc[server_helper.get_shows_data().index[show_id]])
 
     universe_number = int(server_helper.get_shows_data()["universe"].loc[server_helper.get_shows_data().index[show_id]])
     server_helper.sacn_sender.activate_output(universe=universe_number)
@@ -263,15 +265,15 @@ def web_ui_handler_tokenspage():
 @app.route("/show/<show_name>", methods=['GET', 'POST'])
 @server_helper.login_required
 def web_ui_handler_showpages(show_name):
-        shows_data = server_helper.get_shows_data()
-        error_msgs = {field: "" for field in ['cam_addr', 'cam_ftpr', 'mh_addr', 'mh_ftpr', 'univers', 'xdist', 'ydist', 'zdist', 'panrot', 'tiltrot', 'ip_ctrl', 'ip_cam', 'port_cam', 'ip_node', 'show_name']}
+    shows_data = server_helper.get_shows_data()
+    error_msgs = {field: "" for field in ['cam_addr', 'cam_ftpr', 'mh_addr', 'mh_ftpr', 'univers', 'xdist', 'ydist', 'zdist', 'panrot', 'tiltrot', 'ip_ctrl', 'ip_cam', 'port_cam', 'ip_node', 'show_name']}
 
-    # try:
+    try:
         show_id = shows_data.index[shows_data['show_name'] == show_name][0]
-    # except:
-    #     abort(500)
+    except:
+        abort(500)
 
-    # try:
+    try:
         if request.method == 'POST':
             form_name = request.form.get('btn-name')
             if form_name == 'Cancel':
@@ -329,8 +331,8 @@ def web_ui_handler_showpages(show_name):
                 return render_template('shows_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"], show_name=server_helper.get_shows_data().at[0, "show_name"], error_msgs=error_msgs, shows_data=shows_data.transpose()[show_id])
 
         return render_template('shows_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"], show_name=server_helper.get_shows_data().at[0, "show_name"], error_msgs=error_msgs, shows_data=shows_data.transpose()[show_id])
-    # except:
-    #     abort(500)
+    except:
+        abort(500)
 
 @app.route('/login', methods=['GET', 'POST'])
 def web_ui_handler_loginpage():

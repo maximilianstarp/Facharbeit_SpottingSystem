@@ -1,0 +1,9 @@
+:root {
+    --background-color: #333;
+    --text-color: #f8f8f8;
+    --input-border: #666;
+    --button-bg-color: #2E8B57;
+    --button-hover-bg-color: #2C7A4B;
+    --scrollbar-track-color: #444;
+    --scrollbar-thumb-color: #888;
+}

@@ -1,0 +1,15 @@
+{
+  "name": "node_controller",
+  "version": "1.0.0",
+  "description": "Implementation of a control software for the camera-guided control of a moving head",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "start"
+  },
+  "author": "Maximilian Starp",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^28.2.2"
+  }
+}

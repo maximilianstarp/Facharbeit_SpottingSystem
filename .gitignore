@@ -1,3 +1,4 @@
 node_camera/target/
 node_server/venv/
 node_server/__pycache__/
+node_controller/node_modules/

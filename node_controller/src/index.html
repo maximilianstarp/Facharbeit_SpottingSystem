@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controller - SpotSystem</title>
+
+    <link rel="stylesheet" href="./styles/dark_mode_vars.css">
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+    <div id="wrapper">
+        <div id="video-parent" class="row video">
+            <video id="camera-output" muted autoplay></video>
+            <img src="./assets/fadenkreuz_medium.png" alt="+" id="target">
+        </div>
+        <div id="controls-parent" class="row controls">
+            <div id="button-container" class="box">
+                <form id="server">
+                    <label for="ip-server-input">Server IP + Port:</label>
+                    <input type="text" name="ip-server-input" id="ip-server-input" placeholder="">
+                    <label for="token-input">Token:</label>
+                    <input type="text" name="token-input" id="token-input" placeholder="">
+                    <label for="show-input">Show:</label>
+                    <input type="text" name="show-input" id="show-input" placeholder="">
+                    <button type="button" onclick="submitData()">Submit</button>
+                </form>
+                <form id="hardware">
+                    <label for="controller-input">Controller:</label>
+                    <select name="controller-input" id="controller-input"></select>
+                    <label for="camera-input">Camera</label>
+                    <select name="camera-input" id="camera-input"></select>
+                    <button type="button" onclick="getStreamFromDevice()">Submit</button>
+                    <button type="button" onclick="populateControllerSelector()">Reload - Controller</button>
+                    <button type="button" onclick="populateCameraSelector()">Reload - Cameras</button>
+                </form>
+            </div>
+
+            <div id="fader-container" class="box">
+                <div class="slider-grp">
+                    <div class="number" id="speed-value">1</div>
+                    <input type="range" min="1" max="10" step="0.1" value="1" id="speed-fader" class="fader" name="speed-fader" orient="vertical"
+                    oninput="document.getElementById('speed-value').innerHTML = document.getElementById('speed-fader').value">
+                    <label class="lbl" for="speed-fader">Speed</label>
+                </div>
+                <div class="slider-grp">
+                    <div class="number" id="dim-value">0</div>
+                    <input type="range" min="0" max="100" value="0" id="dim-fader" class="fader" name="dim-fader" orient="vertical"
+                    oninput="document.getElementById('dim-value').innerHTML = document.getElementById('dim-fader').value">
+                    <label class="lbl" for="dim-fader">Dim</label>
+                </div>
+                <div class="slider-grp">
+                    <div class="number" id="cto-value">0</div>
+                    <input type="range" min="0" max="100" value="0" id="cto-fader" class="fader" name="cto-fader" orient="vertical"
+                    oninput="document.getElementById('cto-value').innerHTML = document.getElementById('cto-fader').value">
+                    <label class="lbl" for="cto-fader">CTO</label>
+                </div>
+                <div class="slider-grp">
+                    <div class="number" id="zoom-value">0</div>
+                    <input type="range" min="0" max="100" value="0" id="zoom-fader" class="fader" name="zoom-fader" orient="vertical"
+                    oninput="document.getElementById('zoom-value').innerHTML = document.getElementById('zoom-fader').value">
+                    <label class="lbl" for="zoom-fader">Zoom</label>
+                </div>
+                <div class="slider-grp">
+                    <div class="number" id="focus-value">0</div>
+                    <input type="range" min="0" max="100" value="0" id="focus-fader" class="fader" name="focus-fader" orient="vertical"
+                    oninput="document.getElementById('focus-value').innerHTML = document.getElementById('focus-fader').value">
+                    <label class="lbl" for="focus-fader">Focus</label>
+                </div>
+            </div>
+
+            <div id="return-container" class="box">
+                <div class="return-box">
+                    <label for="dist">Distance:</label>
+                    <input type="text" name="out-dist" id="out-dist" readonly>
+                </div>
+                <div class="return-box">
+                    <label for="point">Point (x,y,z):</label>
+                    <input type="text" name="out-point" id="out-point" readonly>
+                </div>
+                <div class="return-box">
+                    <label for="pan-mh">Pan MH:</label>
+                    <input type="text" name="out-pan-mh" id="out-pan-mh" readonly>
+                </div>
+                <div class="return-box">
+                    <label for="tilt-mh">Tilt MH:</label>
+                    <input type="text" name="out-tilt-mh" id="out-tilt-mh" readonly>
+                </div>
+                <div class="return-box">
+                    <label for="pan-cam">Pan Cam:</label>
+                    <input type="text" name="out-pan-cam" id="out-pan-cam" readonly>
+                </div>
+                <div class="return-box">
+                    <label for="tilt-cam">Tilt Cam:</label>
+                    <input type="text" name="out-tilt-cam" id="out-tilt-cam" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="./animations.js"></script>
+<script src="./connections.js"></script>
+<script src="./controller.js"></script>
+<script src="./webcam.js"></script>
+
+</html>

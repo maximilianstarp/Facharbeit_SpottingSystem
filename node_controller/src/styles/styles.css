@@ -1,0 +1,133 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+}
+input[type="text"],
+select {
+    padding: 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    width: 220px;
+}
+input[type=range][orient=vertical] {
+    appearance: slider-vertical;
+    width: 12px;
+    height: 200px;
+    padding: 0 5px;
+}
+button {
+    margin-top: 20px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--button-bg-color);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: fit-content;
+    align-self: center;
+}
+button:hover {
+    background-color: var(--button-hover-bg-color);
+}
+#wrapper {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+#video-parent {
+    width: 100%;
+    min-height: 200px;
+    position: relative;
+    flex: 1;
+    display: flex;
+}
+#video-parent #camera-output {
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+#video-parent #target {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+#controls-parent {
+    width: 100%;
+    height: 300px;
+    display: flex;
+}
+#controls-parent .box {
+    height: 298px;
+    width: 33vw;
+    border-top: 2px solid black;
+}
+#controls-parent .box::-webkit-scrollbar {
+    width: 12px;
+}
+#controls-parent .box::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+}
+#controls-parent .box::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 6px;
+}
+#controls-parent #button-container {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: 2px solid black;
+}
+#controls-parent #button-container #hardware {
+    margin-bottom: 15px;
+}
+#controls-parent .error {
+    border: 3px solid red !important;
+}
+#controls-parent #fader-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-right: 2px solid black;
+}
+#controls-parent #fader-container .slider-grp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#controls-parent #return-container .return-box {
+    display: flex;
+    justify-content: space-around;
+    width: 80%;
+    margin-top: 15px;
+    margin-left: 50px;
+}
+#controls-parent #return-container .return-box label {
+    text-align: left;
+    flex: 1;
+    margin-right: 15px;
+}
+#controls-parent #return-container .return-box input[type="text"] {
+    text-align: right;
+    flex: 1;
+}

@@ -11,7 +11,7 @@ class DMXCalculator():
         self.camera_tilt = 0
         self.universe = [0]*512
     
-    def get_distance(camera_ip:str, camera_port:int) -> str:
+    def get_distance(self, camera_ip:str, camera_port:int) -> str:
         try:
             distance = requests.get(f"http://{camera_ip}:{camera_port}", timeout=0.03)
             return distance.text
@@ -19,7 +19,7 @@ class DMXCalculator():
             return None
     
     def calculate_dmx_universe(self, values, shows_data):
-        distance = self.get_distance(camera_ip=shows_data["camera_ip"], camera_port=shows_data["camera_port"])
+        distance = self.get_distance(camera_ip=shows_data["ip_cam"], camera_port=shows_data["port_cam"])
         parsed_data = json.loads(pd.DataFrame({"values": values})["values"].iloc[0])
 
         try:

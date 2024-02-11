@@ -307,7 +307,7 @@ input, button {
 #login #main {
     position: relative;
     width: 380px;
-    height: 420px;
+    height: 490px;
     background: var(--large-item-color);
     border-radius:8px;
     overflow: hidden;
@@ -319,7 +319,7 @@ input, button {
     top: -50%;
     left: -50%;
     width: 380px;
-    height: 420px;
+    height: 490px;
     transform-origin:bottom right;
     background:linear-gradient(0deg, transparent, var(--highlights-color), var(--highlights-color));
     animation: animate 6s linear infinite;
@@ -331,7 +331,7 @@ input, button {
     top: -50%;
     left: -50%;
     width: 380px;
-    height: 420px;
+    height: 490px;
     transform-origin:bottom right;
     background:linear-gradient(0deg, transparent, var(--highlights-color), var(--highlights-color));
     animation: animate 6s linear infinite;
