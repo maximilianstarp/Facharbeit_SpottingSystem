@@ -129,6 +129,7 @@ def api_handler_controller_input():
 
     universe_number = int(server_helper.get_shows_data()["universe"].loc[server_helper.get_shows_data().index[show_id]])
     server_helper.sacn_sender.activate_output(universe=universe_number)
+    universe = tuple(universe)
     server_helper.sacn_sender[universe_number].dmx_data = universe
 
     return jsonify({'Distance': distance, 'Point': {'x':x,'y':y,'z':z}, 'Pan-MH': movinghead_pan, 'Tilt-MH': movinghead_tilt, 'Pan-Cam': camera_pan, 'Tilt-Cam': camera_tilt})
