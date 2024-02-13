@@ -32,15 +32,14 @@ class SpottingSystemServerHelper():
         try:
             self.sacn_sender = sacn.sACNsender()
             self.sacn_sender.start()
-            self.sacn_sender.multicast = True # unicast ??
         except:
             print("Crucial sACN Error. Server can not start.")
     
     def get_settings_data(self):
-        return pd.read_csv(self.csv_settings_data_path)
+        return pd.read_csv(self.csv_settings_data_path, dtype=str)
 
     def get_shows_data(self):
-        return pd.read_csv(self.csv_shows_data_path)
+        return pd.read_csv(self.csv_shows_data_path, dtype=str)
     
     def validate_ip_address(self, value:str) -> bool:
         if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', value):
@@ -94,6 +93,8 @@ class SpottingSystemServerHelper():
                 return False
             if show_name in self.get_shows_data()['show_name'].values:
                 return False
+            if show_name == "":
+                return False
             new_show = self.default_show.loc[0].to_frame().transpose()
             new_show["show_name"] = show_name
             shows_data = pd.concat([self.get_shows_data(), new_show], ignore_index=True)
@@ -128,7 +129,8 @@ def api_handler_controller_input():
     universe, distance, x, y, z, movinghead_pan, movinghead_tilt, camera_pan, camera_tilt = server_helper.dmx_calculator.calculate_dmx_universe(values=data_input, shows_data=server_helper.get_shows_data().loc[server_helper.get_shows_data().index[show_id]])
 
     universe_number = int(server_helper.get_shows_data()["universe"].loc[server_helper.get_shows_data().index[show_id]])
-    server_helper.sacn_sender.activate_output(universe=universe_number)
+    server_helper.sacn_sender.activate_output(universe_number)
+    server_helper.sacn_sender[universe_number].multicast = True # unicast ??
     universe = tuple(universe)
     server_helper.sacn_sender[universe_number].dmx_data = universe
 
@@ -309,7 +311,7 @@ def web_ui_handler_showpages(show_name):
                     input_data = input_data.transpose()
                     for key in input_data:
                         data = input_data[key].to_list()[0]
-                        if key in ['cam_addr', 'mh_addr', 'universe', 'port_cam'] and not server_helper.validate_number_range(data, *{'cam_addr': (0, 512), 'mh_addr': (0, 512), 'univers': (1, 32768), 'port_cam': (1, 65535)}[key]):
+                        if key in ['cam_addr', 'mh_addr', 'universe', 'port_cam'] and not server_helper.validate_number_range(data, *{'cam_addr': (0, 512), 'mh_addr': (0, 512), 'universe': (1, 32768), 'port_cam': (1, 65535)}[key]):
                             error_msgs[key] = "Number not within valid number range"
                             break
                         if key in ['cam_ftpr', 'mh_ftpr'] and data not in footprints:

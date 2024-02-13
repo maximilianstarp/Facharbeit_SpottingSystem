@@ -8,14 +8,14 @@ from functools import lru_cache
 @lru_cache
 class DMXCalculator():
     def __init__(self) -> None:
-        self.camera_pan = 0
-        self.camera_tilt = 0
+        self.camera_pan_imag = 180
+        self.camera_tilt_imag = 90
         self.universe = [0]*512
     
     def get_distance(self, camera_ip:str, camera_port:int) -> str:
         try:
-            distance = requests.get(f"http://{camera_ip}:{camera_port}", timeout=0.03)
-            return distance.text
+            distance = int(requests.get(f"http://{camera_ip}:{camera_port}", timeout=0.5).json())
+            return distance
         except:
             return None
     
@@ -24,40 +24,55 @@ class DMXCalculator():
         parsed_data = json.loads(pd.DataFrame({"values": values})["values"].iloc[0])
 
         try:
-            distance = 5
             if distance == None: return[], "Cam not found", "Cam not found", "Cam not found", "Cam not found", "Cam not found", "Cam not found", "Cam not found", "Cam not found"
 
-            vector_lamp = [shows_data["xdist"], shows_data["ydist"], shows_data["zdist"]]
+            vector_lamp = np.array([shows_data["xdist"], shows_data["ydist"], shows_data["zdist"]], dtype=float)
 
-            self.camera_pan += float(parsed_data["Axis 0"]) * float(parsed_data["speed"]) * (-1)
-            self.camera_tilt += float(parsed_data["Axis 1"]) * float(parsed_data["speed"]) * (-1)
+            self.camera_pan_imag += float(parsed_data["Axis 0"]) * float(parsed_data["speed"]) / 2
+            self.camera_tilt_imag += float(parsed_data["Axis 1"]) * float(parsed_data["speed"]) / 2
 
-            x = distance * np.cos(np.deg2rad(self.camera_tilt)) * np.cos(np.deg2rad(self.camera_pan))
-            y = distance * np.cos(np.deg2rad(self.camera_tilt)) * np.sin(np.deg2rad(self.camera_pan))
-            z = distance * np.sin(np.deg2rad(self.camera_tilt))
+            if self.camera_pan_imag <= 0: self.camera_pan_imag = 0
+            if self.camera_tilt_imag <= -50: self.camera_tilt_imag = -50
+            if self.camera_pan_imag >= 520: self.camera_pan_imag = 520
+            if self.camera_tilt_imag >= 230: self.camera_tilt_imag = 230
 
+            x = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.cos(np.deg2rad(self.camera_pan_imag))
+            y = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.sin(np.deg2rad(self.camera_pan_imag))
+            z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
 
-            direction_vector = [vector_lamp[0] - x, vector_lamp[1] - y, vector_lamp[2] - z]
+            vector_point = np.array([x,y,z], dtype=float)
+            direction_vector_lamp_point = vector_point - vector_lamp
+            direction_vector_lamp_point_normalized = np.linalg.norm(direction_vector_lamp_point)
+            movinghead_tilt_imag = 90-np.rad2deg(np.arccos(direction_vector_lamp_point[2]/direction_vector_lamp_point_normalized)) + int(shows_data["tiltrot"])
 
-            if (vector_lamp[0] - x) != 0.0: movinghead_pan =  np.arctan((vector_lamp[1] - y) / (vector_lamp[0] - x))
-            else: movinghead_pan =  np.arctan(vector_lamp[1] - y / 0.001)
-            if np.sqrt(direction_vector[0] ** 2 + direction_vector[1] ** 2 + direction_vector[2] ** 2) != 0: movinghead_tilt = np.arcsin((vector_lamp[2] - z) / (np.sqrt(direction_vector[0] ** 2 + direction_vector[1] ** 2 + direction_vector[2] ** 2)))
-            else: movinghead_tilt = np.arcsin((vector_lamp[2] - z) / 0.001)
+            vector_xy_plane = [direction_vector_lamp_point[0], direction_vector_lamp_point[1], 0]
+            vector_xy_plane_sum = np.linalg.norm(vector_xy_plane)
+            movinghead_pan_imag = np.rad2deg(np.arccos(vector_xy_plane[0]/vector_xy_plane_sum)) + int(shows_data["panrot"])
+            if direction_vector_lamp_point[1] > 0: movinghead_pan_imag = 360 - movinghead_pan_imag + int(shows_data["panrot"])
 
-            movinghead_pan = np.rad2deg(movinghead_pan)
-            movinghead_tilt = np.rad2deg(movinghead_tilt)
+            if movinghead_tilt_imag <= -45: movinghead_tilt_imag = -45
+            if movinghead_tilt_imag >= 225: movinghead_tilt_imag = 225
+            if movinghead_pan_imag <= 0: movinghead_pan_imag = 0
+            if movinghead_pan_imag >= 520 : movinghead_pan_imag = 520
 
+            movinghead_tilt = movinghead_tilt_imag + 45
+            movinghead_pan = movinghead_pan_imag
+            camera_pan = self.camera_pan_imag
+            camera_tilt = self.camera_tilt_imag + 50
 
-            self.universe[int(shows_data["mh_addr"]-1):(int(shows_data["mh_addr"]) + 5-1)] = self.degrees_to_dmx(movinghead_pan, movinghead_tilt, 540, 270)
-            self.universe[int(shows_data["cam_addr"]-1):(int(shows_data["cam_addr"]) + 3-1)] = self.degrees_to_dmx(self.camera_pan, self.camera_tilt, 540, 270)
-            self.universe[(int(shows_data["mh_addr"]) + 39-1)] = self.percent_to_dmx(int(parsed_data["dim"]))
-            self.universe[(int(shows_data["mh_addr"]) + 12-1)] = self.percent_to_dmx(int(parsed_data["dim"]))
-            self.universe[(int(shows_data["mh_addr"]) + 32-1)] = self.percent_to_dmx(int(parsed_data["zoom"]))
-            self.universe[(int(shows_data["mh_addr"]) + 34-1)] = self.percent_to_dmx(int(parsed_data["focus"]))
+            camera_dmx = self.degrees_to_dmx(camera_pan, camera_tilt, 530, 280)
+            movinghead_dmx = self.degrees_to_dmx(movinghead_pan, movinghead_tilt, 540, 270)
 
-            if int(parsed_data["dim"]) != 0: self.universe[int(shows_data["mh_addr"])+38] = 34
+            self.universe[int(shows_data["mh_addr"])-1:(int(shows_data["mh_addr"])) + 4-1] = movinghead_dmx[0:4]
+            self.universe[int(shows_data["cam_addr"])-1:(int(shows_data["cam_addr"])) + 4-1] = [camera_dmx[0],camera_dmx[2],camera_dmx[1],camera_dmx[3]]
 
-            return self.universe, distance, x, y, z, movinghead_pan, movinghead_tilt, self.camera_pan, self.camera_tilt
+            self.universe[(int(shows_data["mh_addr"])) + 39-1-1] = self.percent_to_dmx(int(parsed_data["dim"]))
+            self.universe[(int(shows_data["mh_addr"])) + 12-1-1] = self.percent_to_dmx(int(parsed_data["dim"]))
+            self.universe[(int(shows_data["mh_addr"])) + 32-1-1] = self.percent_to_dmx(int(parsed_data["zoom"]))
+            self.universe[(int(shows_data["mh_addr"])) + 34-1-1] = self.percent_to_dmx(int(parsed_data["focus"]))
+            if int(parsed_data["dim"]) != 0: self.universe[int(shows_data["mh_addr"])+38-1-1] = 34
+
+            return self.universe, distance, int(x), int(y), int(z), int(movinghead_pan_imag), int(movinghead_tilt_imag), int(self.camera_pan_imag), int(self.camera_tilt_imag)
 
         except Exception as e:
             error = str(e)

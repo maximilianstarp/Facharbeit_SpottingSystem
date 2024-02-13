@@ -165,7 +165,7 @@ input, button {
     display: flex;
 }
 #home #new-show-bar #new-show-form #new-show-input {
-    flex: 1 1 0%;
+    flex: 1 1 auto !important;
     background-color: var(--small-item-color);
     padding: 1rem;
     border-radius: 1rem;
@@ -526,8 +526,9 @@ input, button {
     border-radius: 1rem;
 }
 #tokens .section .package .input {
-    margin-left: -210px;
+    margin-left: -100px;
     margin-right: 10px;
+    float: left;
 }
 #tokens-footer {
     display: flex;
@@ -628,7 +629,7 @@ input, button {
     .section .package input {
         margin-left:  0px;
         margin-right: 0px;
-        padding-left: 0px;
+        padding-left: 5px;
     }
 
     .section .package {
@@ -644,5 +645,19 @@ input, button {
         margin-bottom: 10px;
         padding-left: 0;
         margin-left: 0;
+    }
+    #tokens .section .package .input {
+        margin-left: 0px;
+        margin-right: 10px;
+        float: left;
+        padding-left: 5px;
+        margin-bottom: 10px;
+    }
+    #home #new-show-bar #new-show-form {
+        display: flex;
+        flex-direction: column;
+    }
+    #home #new-show-bar #new-show-form #new-show-submit {
+        margin-top: 10px;
     }
 }
