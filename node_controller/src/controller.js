@@ -43,7 +43,7 @@ function getDataFromController(gamepadId) {
         }
 
         // fill the return value
-        retVal['Axis ' + k] = axisValue
+        retVal['Axis ' + k] = axisValue * (-1)
     }
     return retVal;
 }

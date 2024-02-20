@@ -28,8 +28,8 @@ class DMXCalculator():
 
             vector_lamp = np.array([shows_data["xdist"], shows_data["ydist"], shows_data["zdist"]], dtype=float)
 
-            self.camera_pan_imag += float(parsed_data["Axis 0"]) * float(parsed_data["speed"]) / 2
-            self.camera_tilt_imag += float(parsed_data["Axis 1"]) * float(parsed_data["speed"]) / 2
+            self.camera_pan_imag += float(parsed_data["Axis 0"]) * float(parsed_data["speed"]) / 2 * (-1)
+            self.camera_tilt_imag += float(parsed_data["Axis 1"]) * float(parsed_data["speed"]) / 2 * (-1)
 
             if self.camera_pan_imag <= 0: self.camera_pan_imag = 0
             if self.camera_tilt_imag <= -50: self.camera_tilt_imag = -50
@@ -48,7 +48,7 @@ class DMXCalculator():
             vector_xy_plane = [direction_vector_lamp_point[0], direction_vector_lamp_point[1], 0]
             vector_xy_plane_sum = np.linalg.norm(vector_xy_plane)
             movinghead_pan_imag = np.rad2deg(np.arccos(vector_xy_plane[0]/vector_xy_plane_sum)) + int(shows_data["panrot"])
-            if direction_vector_lamp_point[1] > 0: movinghead_pan_imag = 360 - movinghead_pan_imag + int(shows_data["panrot"])
+            if direction_vector_lamp_point[1] < 0: movinghead_pan_imag = 360 - movinghead_pan_imag + int(shows_data["panrot"])
 
             if movinghead_tilt_imag <= -45: movinghead_tilt_imag = -45
             if movinghead_tilt_imag >= 225: movinghead_tilt_imag = 225

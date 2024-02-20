@@ -9,9 +9,6 @@ import sacn
 from calculations import DMXCalculator
 from hashing import Hasher
 
-#idk
-footprints = ["MMX_ftpr", "cam_ftpr"]
-
 class SpottingSystemServerHelper():
     def __init__(self) -> None:
         self.hasher = Hasher()
@@ -269,7 +266,7 @@ def web_ui_handler_tokenspage():
 @server_helper.login_required
 def web_ui_handler_showpages(show_name):
     shows_data = server_helper.get_shows_data()
-    error_msgs = {field: "" for field in ['cam_addr', 'cam_ftpr', 'mh_addr', 'mh_ftpr', 'univers', 'xdist', 'ydist', 'zdist', 'panrot', 'tiltrot', 'ip_ctrl', 'ip_cam', 'port_cam', 'ip_node', 'show_name']}
+    error_msgs = {field: "" for field in ['cam_addr', 'mh_addr', 'univers', 'xdist', 'ydist', 'zdist', 'panrot', 'tiltrot', 'ip_ctrl', 'ip_cam', 'port_cam', 'show_name']}
 
     try:
         show_id = shows_data.index[shows_data['show_name'] == show_name][0]
@@ -285,9 +282,7 @@ def web_ui_handler_showpages(show_name):
                 try:
                     input_data = {
                         'cam_addr': request.form['cam-addr'],
-                        'cam_ftpr': request.form['cam-ftpr'],
                         'mh_addr': request.form['mh-addr'],
-                        'mh_ftpr': request.form['mh-ftpr'],
                         'universe': request.form['universe'],
                         'xdist': request.form['x-dist'],
                         'ydist': request.form['y-dist'],
@@ -297,7 +292,6 @@ def web_ui_handler_showpages(show_name):
                         'ip_ctrl': request.form['ip-ctrl'],
                         'ip_cam': request.form['ip-cam'],
                         'port_cam': request.form['port-cam'],
-                        'ip_node': request.form['ip-node'],
                         'show_name': request.form['show-name']
                     }
                 except:
@@ -314,10 +308,7 @@ def web_ui_handler_showpages(show_name):
                         if key in ['cam_addr', 'mh_addr', 'universe', 'port_cam'] and not server_helper.validate_number_range(data, *{'cam_addr': (0, 512), 'mh_addr': (0, 512), 'universe': (1, 32768), 'port_cam': (1, 65535)}[key]):
                             error_msgs[key] = "Number not within valid number range"
                             break
-                        if key in ['cam_ftpr', 'mh_ftpr'] and data not in footprints:
-                            error_msgs[key] = "This is not a valid footprint"
-                            break
-                        if key in ['ip_ctrl', 'ip_cam', 'ip_node'] and not server_helper.validate_ip_address(data):
+                        if key in ['ip_ctrl', 'ip_cam'] and not server_helper.validate_ip_address(data):
                             error_msgs[key] = "No valid IP-Address"
                             break
                         if key == 'show_name' and data in shows_data['show_name'].values:
