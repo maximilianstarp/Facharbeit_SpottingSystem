@@ -6,13 +6,30 @@ import requests
 from functools import lru_cache
 
 @lru_cache
-class DMXCalculator():
+class DMXCalculator:
+    """
+    A class for calculating DMX universe based on camera and moving head positions.
+    """
+
     def __init__(self) -> None:
+        """
+        Initializes the DMXCalculator class with default camera and universe settings.
+        """
         self.camera_pan_imag = 180
         self.camera_tilt_imag = 90
         self.universe = [0]*512
     
-    def get_distance(self, camera_ip:str, camera_port:int) -> str:
+    def get_distance(self, camera_ip: str, camera_port: int) -> str:
+        """
+        Retrieves distance information from a camera.
+        
+        Args:
+            camera_ip (str): The IP address of the camera.
+            camera_port (int): The port number of the camera.
+        
+        Returns:
+            str: The distance obtained from the camera.
+        """
         try:
             distance = int(requests.get(f"http://{camera_ip}:{camera_port}", timeout=0.5).json())
             return distance
@@ -20,6 +37,16 @@ class DMXCalculator():
             return None
     
     def calculate_dmx_universe(self, values, shows_data):
+        """
+        Calculates the DMX universe based on input values and show data.
+        
+        Args:
+            values: The input values.
+            shows_data: The show data.
+        
+        Returns:
+            tuple: A tuple containing the DMX universe, distance, coordinates, and angles.
+        """
         distance = self.get_distance(camera_ip=shows_data["ip_cam"], camera_port=shows_data["port_cam"])
         parsed_data = json.loads(pd.DataFrame({"values": values})["values"].iloc[0])
 
@@ -36,9 +63,13 @@ class DMXCalculator():
             if self.camera_pan_imag >= 520: self.camera_pan_imag = 520
             if self.camera_tilt_imag >= 230: self.camera_tilt_imag = 230
 
-            x = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.cos(np.deg2rad(self.camera_pan_imag))
-            y = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.sin(np.deg2rad(self.camera_pan_imag))
+            # x = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.cos(np.deg2rad(self.camera_pan_imag))
+            # y = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.sin(np.deg2rad(self.camera_pan_imag))
+            # z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
+
             z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
+            x = np.sqrt(distance**2 - z**2) * np.cos(np.deg2rad(self.camera_pan_imag))
+            y = np.sqrt(distance**2 - z**2 - x **2)
 
             vector_point = np.array([x,y,z], dtype=float)
             direction_vector_lamp_point = vector_point - vector_lamp
@@ -79,6 +110,18 @@ class DMXCalculator():
             return [], error, error, error, error, error, error, error, error
     
     def degrees_to_dmx(self, pan:float, tilt:float, max_pan:int, max_tilt:int) -> list:
+        """
+        Converts degrees to DMX values for pan and tilt angles.
+        
+        Args:
+            pan (float): The pan angle.
+            tilt (float): The tilt angle.
+            max_pan (int): The maximum pan angle.
+            max_tilt (int): The maximum tilt angle.
+        
+        Returns:
+            list: A list containing the DMX values for pan and tilt.
+        """
         pan_ges = (pan*255/max_pan)
         pan_dmx = int(round(pan_ges - (pan_ges % 1), 0))
         pan_fine_dmx = int(round((pan_ges % 1)/0.5 * 127, 0))
@@ -89,4 +132,13 @@ class DMXCalculator():
         return [abs(pan_dmx), abs(pan_fine_dmx), abs(tilt_dmx), abs(tilt_fine_dmx)]
     
     def percent_to_dmx(self, value:int) -> int:
+        """
+        Converts a percentage value to DMX.
+        
+        Args:
+            value (int): The percentage value.
+        
+        Returns:
+            int: The corresponding DMX value.
+        """
         return int((255/100)*value)

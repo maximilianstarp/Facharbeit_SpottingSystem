@@ -11,38 +11,48 @@ from hashing import Hasher
 
 class SpottingSystemServerHelper():
     def __init__(self) -> None:
+        # Initialize hasher and DMX calculator objects
         self.hasher = Hasher()
         self.dmx_calculator = DMXCalculator()
 
+        # Paths for CSV files
         self.csv_settings_data_path = "./database/settings_data.csv"
         self.csv_shows_data_path = "./database/shows_data.csv"
         self.csv_default_show_path = "./database/default_show.csv"
 
+        # Attempt to read default show and check database file existence
         try:
             self.default_show = pd.read_csv(self.csv_default_show_path)
             open(self.csv_settings_data_path).close()
             open(self.csv_shows_data_path).close()
         except:
+            # If database error occurs, print error and exit
             print("Crucial database error. Server can not start.")
             exit()
         
+        # Attempt to initialize sACN sender
         try:
             self.sacn_sender = sacn.sACNsender()
             self.sacn_sender.start()
         except:
+            # If sACN error occurs, print error
             print("Crucial sACN Error. Server can not start.")
     
+    # Method to get settings data from CSV
     def get_settings_data(self):
         return pd.read_csv(self.csv_settings_data_path, dtype=str)
 
+    # Method to get shows data from CSV
     def get_shows_data(self):
         return pd.read_csv(self.csv_shows_data_path, dtype=str)
     
+    # Method to validate IP address format
     def validate_ip_address(self, value:str) -> bool:
         if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', value):
             return True
         return False
     
+    # Method to validate number within a range
     def validate_number_range(self, value:int, min_val:int, max_val:int) -> bool:
         try:
             num = int(value)
@@ -52,14 +62,17 @@ class SpottingSystemServerHelper():
             pass
         return False
     
+    # Method to validate UTF-8 encoding
     def validate_utf8(self, string:str) -> bool:
         try:
             string.encode('utf-8').decode('utf-8')
             return True
         except UnicodeDecodeError:
+            # If UTF-8 encoding error occurs, print error
             print("Error: Invalid UTF-8 encoding")
             return False
     
+    # Decorator for login requirement
     @staticmethod
     def login_required(f):
         @wraps(f)
@@ -67,90 +80,124 @@ class SpottingSystemServerHelper():
             if 'logged_in' in session:
                 return f(*args, **kwargs)
             else:
+                # If not logged in, abort with 403 error
                 abort(403)
 
         return decorated
     
+    # Method to toggle between light and dark theme
     def toggle_theme(self, theme:str) -> str:
         return "light" if theme == "dark" else "dark"
     
+    # Method to delete a show from shows data
     def delete_show(self, show_name:str) -> bool:
         try:
+            # Read shows data, filter out the specified show, and rewrite CSV
             dataframe = self.get_shows_data()
             dataframe = self.get_shows_data()[self.get_shows_data().show_name != show_name]
             dataframe.to_csv(self.csv_shows_data_path, index=False)
             return True
         except:
+            # If error occurs during deletion, print error
             print("Error: Unable to delete show.")
             return False
     
+    # Method to add a new show
     def add_show(self, show_name:str) -> bool:
         try:
+            # Check if show name is valid and not already existing
             if not self.validate_utf8(show_name):
                 return False
             if show_name in self.get_shows_data()['show_name'].values:
                 return False
             if show_name == "":
                 return False
+            # Create new show entry and append to shows data
             new_show = self.default_show.loc[0].to_frame().transpose()
             new_show["show_name"] = show_name
             shows_data = pd.concat([self.get_shows_data(), new_show], ignore_index=True)
             shows_data.to_csv(self.csv_shows_data_path, index=False)
             return True
         except:
+            # If error occurs during addition, return False
             return False
 
+# Flask application initialization
 app = Flask(__name__)
+
+# Initialize the Spotting System Server Helper
 server_helper = SpottingSystemServerHelper()
+
+# Set the Flask app secret key using a generated API token from the server helper
 app.secret_key = server_helper.hasher.generate_api_token()
 
-    
+# API route for handling controller input
 @app.route("/controller/input", methods=['POST'])
 def api_handler_controller_input():
+    # Retrieve token, show name, and data input from request
     token = request.headers.get('Authorization')
     show_name = request.args.get('show_name')
     data_input = request.args.getlist('data_input')
 
+    # Check for missing required parameters
     if not token or not show_name or not data_input:
         return jsonify({'error': 'Missing required parameters!'}), 400
+    
+    # Verify authorization with the provided token
     if token != server_helper.get_settings_data()["controller_token"].to_list()[0]:
         return jsonify({'error': 'Unauthorized access!'}), 401
+    
     try:
+        # Retrieve the show ID based on the provided show name
         show_id = server_helper.get_shows_data().index[server_helper.get_shows_data()["show_name"] == show_name][0]
     except:
         return jsonify({'error': 'Show not found!'}), 405
     
+    # Check if the request IP matches the stored IP control address
     if request.remote_addr != server_helper.get_shows_data()['ip_ctrl'].loc[server_helper.get_shows_data().index[show_id]]:
         return jsonify({'error': 'Unauthorized access! Wrong IP'}), 402
     
+    # Calculate DMX universe and related parameters
     universe, distance, x, y, z, movinghead_pan, movinghead_tilt, camera_pan, camera_tilt = server_helper.dmx_calculator.calculate_dmx_universe(values=data_input, shows_data=server_helper.get_shows_data().loc[server_helper.get_shows_data().index[show_id]])
 
+    # Extract universe number
     universe_number = int(server_helper.get_shows_data()["universe"].loc[server_helper.get_shows_data().index[show_id]])
+    
+    # Activate output for the corresponding universe
     server_helper.sacn_sender.activate_output(universe_number)
-    server_helper.sacn_sender[universe_number].multicast = True # unicast ??
+    server_helper.sacn_sender[universe_number].multicast = True # Set multicast option
+    
+    # Prepare universe data and send it
     universe = tuple(universe)
     server_helper.sacn_sender[universe_number].dmx_data = universe
 
+    # Return JSON response with calculated values
     return jsonify({'Distance': distance, 'Point': {'x':x,'y':y,'z':z}, 'Pan-MH': movinghead_pan, 'Tilt-MH': movinghead_tilt, 'Pan-Cam': camera_pan, 'Tilt-Cam': camera_tilt})
 
+# Route for handling requests to the homepage
 @app.route("/", methods=['GET', 'POST'])
+# Requires login for accessing the homepage
 @SpottingSystemServerHelper.login_required
 def web_ui_handler_homepage():
     try:
         if request.method == "POST":
+            # Retrieve form data and current theme
             form_name = request.form.get('btn-name')
             theme = server_helper.get_settings_data().at[0, "theme"]
 
+            # Handle theme toggle request
             if form_name == 'theme-form':
                 new_theme = server_helper.toggle_theme(theme)
                 settings_data = server_helper.get_settings_data()
                 settings_data.at[0, "theme"] = new_theme
                 settings_data.to_csv(server_helper.csv_settings_data_path, index=False)
             
+            # Handle show loading request
             if form_name == 'load':
                 show_name = request.form.get('btn-index')
                 return redirect(f'/show/{show_name}')
             
+            # Handle show deletion request
             if "btn-delete" in request.form:
                 show_name = request.form.get('btn-delete')
                 if server_helper.delete_show(show_name):
@@ -158,6 +205,7 @@ def web_ui_handler_homepage():
                 else:
                     abort(500)
             
+            # Handle new show addition request
             if form_name == 'add-show':
                 show_name = request.form['show-name']
                 if server_helper.add_show(show_name):
@@ -165,16 +213,20 @@ def web_ui_handler_homepage():
                 else:
                     abort(500)
     
+        # Retrieve theme and show list for rendering homepage
         theme = server_helper.get_settings_data().at[0, "theme"]
         shows = server_helper.get_shows_data()['show_name'].tolist()
         return render_template('home_page_template.html', theme=theme, shows=shows)
     except:
         abort(500)
 
+# Route for handling requests to the settings page
 @app.route("/settings", methods=['GET', 'POST'])
+# Requires login for accessing the settings page
 @server_helper.login_required
 def web_ui_handler_settingspage():
     general_settings_data = server_helper.get_settings_data()
+    # Initialize error messages dictionary
     error_msgs = {'current_username': "", 'new_username': "", 'repnew_username': "", 'current_psw': "", 'new_psw': "", 'repnew_psw': "", 'port': ""}
     new_username = ""
     new_password = ""
@@ -182,8 +234,10 @@ def web_ui_handler_settingspage():
     try:
         if request.method == 'POST':
             form_name = request.form.get('btn-name')
+            # Handle form submission
             if form_name == "Save":
                 try:
+                    # Retrieve input data from form
                     input_data = {
                         'current_username': request.form.get('current-username'),
                         'new_username': request.form.get('new-username'),
@@ -194,6 +248,7 @@ def web_ui_handler_settingspage():
                         'new_port': request.form.get('new-port'),
                     }
                 except:
+                    # Handle data reading error
                     error_msgs.update({key: "Could not read in Data. Make Sure all Data is written in utf-8." for key in error_msgs})
                     return render_template('settings_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"], error_msgs=error_msgs, placeholders=general_settings_data.transpose()[0].to_dict())
                 
@@ -245,9 +300,12 @@ def web_ui_handler_settingspage():
 
         return render_template('settings_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"], error_msgs=error_msgs, placeholders=general_settings_data.transpose()[0].to_dict())
     except Exception as e:
-       abort(500)
+        # Handle general exception
+        abort(500)
 
+# Route for handling requests to the tokens page
 @app.route("/tokens", methods=['GET', 'POST'])
+# Requires login for accessing the tokens page
 @server_helper.login_required
 def web_ui_handler_tokenspage():
     settings_data = server_helper.get_settings_data()
@@ -255,14 +313,19 @@ def web_ui_handler_tokenspage():
     if request.form == 'POST':
         form_name = request.form.get('btn-name')
         if form_name == "New Controller-Token":
+            # Generate a new controller token
             settings_data["controller_token"] = server_helper.hasher.generate_api_token()
         settings_data.to_csv(server_helper.csv_settings_data_path, index=False)
 
+        # Render the tokens page template with updated token and theme
         return render_template("tokens_page_template.html", controller_token=settings_data['controller_token'][0], theme=server_helper.get_settings_data().at[0, "theme"])
     
+    # Render the tokens page template with current token and theme
     return render_template("tokens_page_template.html", controller_token=settings_data['controller_token'][0], theme=server_helper.get_settings_data().at[0, "theme"])
 
+# Route for handling requests to specific show pages
 @app.route("/show/<show_name>", methods=['GET', 'POST'])
+# Requires login for accessing show pages
 @server_helper.login_required
 def web_ui_handler_showpages(show_name):
     shows_data = server_helper.get_shows_data()
@@ -277,9 +340,11 @@ def web_ui_handler_showpages(show_name):
         if request.method == 'POST':
             form_name = request.form.get('btn-name')
             if form_name == 'Cancel':
+                # Redirect to homepage if cancel button is clicked
                 return redirect("/")
             elif form_name == "Save":
                 try:
+                    # Retrieve input data from form
                     input_data = {
                         'cam_addr': request.form['cam-addr'],
                         'mh_addr': request.form['mh-addr'],
@@ -295,6 +360,7 @@ def web_ui_handler_showpages(show_name):
                         'show_name': request.form['show-name']
                     }
                 except:
+                    # Handle data reading error
                     error_msgs.update({key: "Could not read in Data. Make Sure all Data is written in utf-8." for key in error_msgs})
                     return render_template('shows_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"], show_name=show_name, error_msgs=error_msgs, shows_data=shows_data.transpose()[show_id])
 
@@ -328,6 +394,7 @@ def web_ui_handler_showpages(show_name):
     except:
         abort(500)
 
+# Route for handling login requests
 @app.route('/login', methods=['GET', 'POST'])
 def web_ui_handler_loginpage():
     try:
@@ -338,6 +405,7 @@ def web_ui_handler_loginpage():
             if server_helper.validate_utf8(username) and server_helper.validate_utf8(password):
                 settings_data = server_helper.get_settings_data()
                 if server_helper.hasher.check_hashed_credentials(username, password, settings_data.at[0, "username"], settings_data.at[0, "password"]):
+                    # If credentials are valid, set session as logged in and redirect to homepage
                     session['logged_in'] = True
                     return redirect(url_for('web_ui_handler_homepage'))
                 else:
@@ -345,34 +413,46 @@ def web_ui_handler_loginpage():
             else:
                 msg = "Credentials are not UTF-8."
             
+            # Render login page with appropriate message and theme
             return render_template('login_page_template.html', msg=msg, theme=settings_data.at[0, "theme"])
         
+        # Render login page with theme
         return render_template('login_page_template.html', theme=server_helper.get_settings_data().at[0, "theme"])
     except:
         abort(500)
 
+# Route for handling logout requests
 @app.route("/logout")
 @server_helper.login_required
 def web_ui_handler_logout():
     try:
+        # Clear session and redirect to login page
         session.pop('logged_in', None)
         return redirect(url_for('web_ui_handler_loginpage'))
     except:
         abort(500)
 
+# Error handlers for 403, 404, and 500 errors
 @app.errorhandler(403)
 def error_handler_403(e):
+    # Redirect to login page for unauthorized access
     return redirect(url_for('web_ui_handler_loginpage'))
+
 @app.errorhandler(404)
 def error_handler_404(e):
+    # Render custom 404 page for page not found errors
     return render_template('404.html'), 404
+
 @app.errorhandler(500)
 def error_handler_500(e):
+    # Render custom 500 page for server errors
     return render_template('500.html'), 500
 
+# Register error handlers
 app.register_error_handler(404, error_handler_404)
 app.register_error_handler(500, error_handler_500)
 app.register_error_handler(403, error_handler_403)
 
+# Run the Flask app
 if __name__ == '__main__':
     app.run("0.0.0.0", port=int(server_helper.get_settings_data()["port"].to_list()[0]), debug=True)
