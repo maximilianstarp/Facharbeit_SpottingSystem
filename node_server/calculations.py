@@ -16,7 +16,7 @@ class DMXCalculator:
         Initializes the DMXCalculator class with default camera and universe settings.
         """
         self.camera_pan_imag = 180
-        self.camera_tilt_imag = 90
+        self.camera_tilt_imag = 45
         self.universe = [0]*512
         self.mh_pan_old = 0
     
@@ -62,7 +62,7 @@ class DMXCalculator:
             if self.camera_pan_imag <= 0: self.camera_pan_imag = 0
             if self.camera_tilt_imag <= -50: self.camera_tilt_imag = -50
             if self.camera_pan_imag >= 520: self.camera_pan_imag = 520
-            if self.camera_tilt_imag >= 230: self.camera_tilt_imag = 230
+            if self.camera_tilt_imag >= 90: self.camera_tilt_imag = 90
 
             z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
             x = np.sqrt(distance**2 - z**2) * np.cos(np.deg2rad(self.camera_pan_imag))
