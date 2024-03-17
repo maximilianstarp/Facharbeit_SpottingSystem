@@ -1,2 +1,2 @@
 show_name,cam_addr,mh_addr,universe,xdist,ydist,zdist,panrot,tiltrot,ip_ctrl,ip_cam,port_cam
-new show,2,41,5,68,0,0,0,0,127.0.0.1,10.12.80.21,8080
+new show,2,41,5,0,0,0,0,0,127.0.0.1,10.12.80.21,8080

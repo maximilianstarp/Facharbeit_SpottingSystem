@@ -176,7 +176,6 @@ def api_handler_controller_input():
 
 # Route for handling requests to the homepage
 @app.route("/", methods=['GET', 'POST'])
-# Requires login for accessing the homepage
 @SpottingSystemServerHelper.login_required
 def web_ui_handler_homepage():
     try:
@@ -222,7 +221,6 @@ def web_ui_handler_homepage():
 
 # Route for handling requests to the settings page
 @app.route("/settings", methods=['GET', 'POST'])
-# Requires login for accessing the settings page
 @server_helper.login_required
 def web_ui_handler_settingspage():
     general_settings_data = server_helper.get_settings_data()
@@ -305,7 +303,6 @@ def web_ui_handler_settingspage():
 
 # Route for handling requests to the tokens page
 @app.route("/tokens", methods=['GET', 'POST'])
-# Requires login for accessing the tokens page
 @server_helper.login_required
 def web_ui_handler_tokenspage():
     settings_data = server_helper.get_settings_data()
@@ -325,7 +322,6 @@ def web_ui_handler_tokenspage():
 
 # Route for handling requests to specific show pages
 @app.route("/show/<show_name>", methods=['GET', 'POST'])
-# Requires login for accessing show pages
 @server_helper.login_required
 def web_ui_handler_showpages(show_name):
     shows_data = server_helper.get_shows_data()

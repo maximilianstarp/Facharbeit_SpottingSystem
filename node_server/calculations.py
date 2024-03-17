@@ -18,6 +18,7 @@ class DMXCalculator:
         self.camera_pan_imag = 180
         self.camera_tilt_imag = 90
         self.universe = [0]*512
+        self.mh_pan_old = 0
     
     def get_distance(self, camera_ip: str, camera_port: int) -> str:
         """
@@ -63,13 +64,9 @@ class DMXCalculator:
             if self.camera_pan_imag >= 520: self.camera_pan_imag = 520
             if self.camera_tilt_imag >= 230: self.camera_tilt_imag = 230
 
-            # x = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.cos(np.deg2rad(self.camera_pan_imag))
-            # y = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.sin(np.deg2rad(self.camera_pan_imag))
-            # z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
-
             z = distance * np.sin(np.deg2rad(self.camera_tilt_imag))
             x = np.sqrt(distance**2 - z**2) * np.cos(np.deg2rad(self.camera_pan_imag))
-            y = np.sqrt(distance**2 - z**2 - x **2)
+            y = distance * np.cos(np.deg2rad(self.camera_tilt_imag)) * np.sin(np.deg2rad(self.camera_pan_imag))
 
             vector_point = np.array([x,y,z], dtype=float)
             direction_vector_lamp_point = vector_point - vector_lamp
@@ -80,6 +77,9 @@ class DMXCalculator:
             vector_xy_plane_sum = np.linalg.norm(vector_xy_plane)
             movinghead_pan_imag = np.rad2deg(np.arccos(vector_xy_plane[0]/vector_xy_plane_sum)) + int(shows_data["panrot"])
             if direction_vector_lamp_point[1] < 0: movinghead_pan_imag = 360 - movinghead_pan_imag + int(shows_data["panrot"])
+            if direction_vector_lamp_point[1] >= 0 and self.mh_pan_old >= 186: movinghead_pan_imag = np.rad2deg(np.arccos(vector_xy_plane[0]/vector_xy_plane_sum)) + int(shows_data["panrot"]) + 360
+
+            self.mh_pan_old = movinghead_pan_imag
 
             if movinghead_tilt_imag <= -45: movinghead_tilt_imag = -45
             if movinghead_tilt_imag >= 225: movinghead_tilt_imag = 225
